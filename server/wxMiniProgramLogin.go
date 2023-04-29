@@ -22,8 +22,8 @@ type Code2SessionResponse struct {
 
 // WXMiniProgramLogin 微信小程序登录
 func (s *Server) WXMiniProgramLogin(code string) (common.Response, error) {
-	AppID := "wx7769da915fc84591"
-	AppSecret := ""
+	AppID := "wx0f79c8e2fa2000cd"                   // AppID(小程序ID)
+	AppSecret := "4837f4bdc5b3fdf2af7416ea224a1ed4" // AppSecret(小程序密钥)
 
 	// 1.请求微信接口，获取 openid 和 session_key
 	// GET https://api.weixin.qq.com/sns/jscode2session?appid=APPID&secret=SECRET&js_code=JSCODE&grant_type=authorization_code
