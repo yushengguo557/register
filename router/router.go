@@ -17,8 +17,9 @@ func NewRouter() *gin.Engine {
 
 	apiv1 := r.Group("/v1") // 路由组
 	{
-		// api.POST("/register", api.Register)
-		apiv1.POST("/wxMiniLogin", api.WXMiniProgramLogin)
+		apiv1.POST("/wxMiniLogin", api.WXMiniProgramLogin) // 微信小程序登录
+		apiv1.POST("/getPhoneNumber", api.GetPhoneNumber)  // 微信小程序获取手机号码
+
 		apiv1.POST("/wxLogin", api.WXLogin)
 	}
 	return r
