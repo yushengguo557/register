@@ -23,7 +23,7 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 		// 解析 token
 		claims := &common.Claims{}
 		token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-			return "golang", nil
+			return "", nil
 		})
 		if err != nil || !token.Valid {
 			// 如果解析失败或者 token 不合法，则返回错误信息

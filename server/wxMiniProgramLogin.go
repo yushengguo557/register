@@ -1,10 +1,10 @@
 package server
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 
 	"github.com/yushengguo557/register/common"
@@ -27,19 +27,36 @@ func (s *Server) WXMiniProgramLogin(code string) (common.Response, error) {
 
 	// 1.请求微信接口，获取 openid 和 session_key
 	// GET https://api.weixin.qq.com/sns/jscode2session?appid=APPID&secret=SECRET&js_code=JSCODE&grant_type=authorization_code
-	resp, err := http.Get("https://api.weixin.qq.com/sns/jscode2session?appid=" + AppID + "&secret=" + AppSecret + "&js_code=" + code + "&grant_type=authorization_code")
+	// var url bytes.Buffer
+	// url.WriteString("https://api.weixin.qq.com/sns/jscode2session?appid=")
+	// url.WriteString(AppID)
+	// url.WriteString("&secret=")
+	// url.WriteString(AppSecret)
+	// url.WriteString("&js_code=")
+	// url.WriteString(code)
+	// url.WriteString("&grant_type=authorization_code")
+	url := fmt.Sprintf("https://api.weixin.qq.com/sns/jscode2session?appid=%s&secret=%s&js_code=%s&grant_type=authorization_code",
+		AppID, AppSecret, code,
+	)
+	resp, err := http.Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("获取 openid 和 session_key 失败: %w", err)
 	}
 	defer resp.Body.Close()
 
 	// 2.读取 并 解析返回的 JSON 数据
-	body, err := io.ReadAll(resp.Body)
+	// body, err := io.ReadAll(resp.Body)
+	reader := bufio.NewReader(resp.Request.Body)
+	var p []byte
+	n, err := reader.Read(p)
+	if err != nil {
+		return nil, fmt.Errorf("读取 openid 和 session_key 失败: %w", err)
+	}
 	if err != nil {
 		return nil, fmt.Errorf("读取 openid 和 session_key 失败: %w", err)
 	}
 	var rsp Code2SessionResponse
-	err = json.Unmarshal(body, &rsp)
+	err = json.Unmarshal(p[:n], &rsp)
 	if err != nil {
 		return nil, fmt.Errorf("解析 openid 和 session_key 失败: %w", err)
 	}
@@ -92,7 +109,7 @@ type GetPhoneNumberResponse struct {
 // GetPhoneNumber 微信小程序登陆成功后获取手机号
 func (s *Server) GetPhoneNumber(code, token string) error {
 	// 1. 向微信接口服务发送 POST 请
-	url := "https://api.weixin.qq.com/wxa/business/getuserphonenumber?access_token=" + token
+	url := fmt.Sprintf("https://api.weixin.qq.com/wxa/business/getuserphonenumber?access_token=%s", token)
 	jsonStr, err := json.Marshal(GetPhoneNumberRequest{AccessToken: token, Code: code})
 	if err != nil { // 序列化失败
 		return fmt.Errorf("序列化 GetPhoneNumberRequest 结构体失败: %w", err)
@@ -104,12 +121,13 @@ func (s *Server) GetPhoneNumber(code, token string) error {
 	defer resp.Body.Close()
 
 	// 2.读取 并 解析响应体json数据
-	var buff bytes.Buffer
-	if _, err = buff.ReadFrom(resp.Body); err != nil {
+	reader := bufio.NewReader(resp.Body)
+	var p []byte
+	if _, err = reader.Read(p); err != nil {
 		return fmt.Errorf("从响应体中读取json数据失败: %w", err)
 	}
 	var ret GetPhoneNumberResponse
-	err = json.Unmarshal(buff.Bytes(), &ret)
+	err = json.Unmarshal(p, &ret)
 	if err != nil {
 		return fmt.Errorf("响应体反序列化失败: %w", err)
 	}
