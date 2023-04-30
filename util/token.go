@@ -7,7 +7,7 @@ import (
 	"github.com/yushengguo557/register/common"
 )
 
-// generateToken 生成 token
+// GenerateToken 生成 token
 func GenerateToken(openid, sessionKey string) (token string, err error) {
 	token, err = jwt.NewWithClaims(jwt.SigningMethodES256, common.Claims{
 		Openid:     openid,
